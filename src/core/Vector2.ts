@@ -1,77 +1,71 @@
-export type Vector2 = [number, number];
-
-export namespace V2 {
-  export function addS(v: Vector2, x: number, y: number): Vector2 {
-    v[0] += x;
-    v[1] += y;
-    return v;
+export class Vector2 {
+  constructor(public x: number = 0, public y: number = 0) {}
+  addS(x: number, y: number) {
+    this.x += x;
+    this.y += y;
+    return this;
   }
-  export function addS1(v: Vector2, s: number): Vector2 {
-    v[0] += s;
-    v[1] += s;
-    return v;
+  addV(v: Vector2) {
+    this.x += v.x;
+    this.y += v.y;
+    return this;
   }
-  export function addV(v: Vector2, v1: Vector2): Vector2 {
-    v[0] += v1[0];
-    v[1] += v1[1];
-    return v;
+  addS1(s: number) {
+    this.x += s;
+    this.y += s;
+    return this;
   }
-  export function subS(v: Vector2, x: number, y: number): Vector2 {
-    v[0] -= x;
-    v[1] -= y;
-    return v;
+  subS(x: number, y: number) {
+    this.x -= x;
+    this.y -= y;
+    return this;
   }
-  export function subS1(v: Vector2, s: number): Vector2 {
-    v[0] -= s;
-    v[1] -= s;
-    return v;
+  subV(v: Vector2) {
+    this.x -= v.x;
+    this.y -= v.y;
+    return this;
   }
-  export function subV(v: Vector2, v1: Vector2): Vector2 {
-    v[0] -= v1[0];
-    v[1] -= v1[1];
-    return v;
+  subS1(s: number) {
+    this.x -= s;
+    this.y -= s;
+    return this;
   }
-  export function mulS(v: Vector2, x: number, y: number): Vector2 {
-    v[0] *= x;
-    v[1] *= y;
-    return v;
+  mulS(x: number, y: number) {
+    this.x *= x;
+    this.y *= y;
+    return this;
   }
-  export function mulS1(v: Vector2, s: number): Vector2 {
-    v[0] *= s;
-    v[1] *= s;
-    return v;
+  mulV(v: Vector2) {
+    this.x += v.x;
+    this.y += v.y;
+    return this;
   }
-  export function length(v: Vector2) {
-    return Math.sqrt(v[0] * v[0] + v[1] * v[1]);
+  mulS1(s: number) {
+    this.x *= s;
+    this.y *= s;
+    return this;
   }
-
-  export function lengthSQRT(v: Vector2) {
-    return v[0] * v[0] + v[1] * v[1];
+  clone(): Vector2 {
+    return new Vector2(this.x, this.y);
   }
-
-  export function clone(v: Vector2): Vector2 {
-    return [v[0], v[1]];
+  length() {
+    return Math.sqrt(this.x * this.x + this.y * this.y);
   }
-  export function copy(v: Vector2, v1: Vector2): Vector2 {
-    v[0] = v1[0];
-    v[1] = v1[1];
-    return v;
+  lengthSQRD() {
+    return this.x * this.x + this.y * this.y;
   }
-  export function dot(v: Vector2, v1: Vector2) {
-    return v[0] * v1[0] + v[1] * v1[1];
+  dot(v: Vector2) {
+    return this.x * v.x + this.y * v.y;
   }
-  export function cross(v: Vector2, v1: Vector2) {
-    return v[0] * v1[1] - v[1] * v1[0];
+  cross(v: Vector2) {
+    return this.x * v.y - this.y * v.x;
   }
-  export function normalize(v: Vector2) {
-    return mulS1(clone(v), length(v));
+  nromalized() {
+    return this.clone().mulS1(1 / this.length());
   }
-  export function v2(): Vector2 {
-    return [0, 0];
-  }
-  export function set(v: Vector2, x: number, y: number) {
-    v[0] = x;
-    v[1] = y;
-    return v;
+  copy(v: Vector2) {
+    this.x = v.x;
+    this.y = v.y;
+    return this;
   }
 }
