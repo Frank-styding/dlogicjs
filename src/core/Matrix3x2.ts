@@ -11,6 +11,10 @@ export class Matrix3x2 {
     this.m[5] = m.m[5];
     return this;
   }
+  identity() {
+    this.copy(Matrix3x2.identity());
+    return this;
+  }
 
   clone() {
     return new Matrix3x2([...this.m]);
@@ -18,18 +22,22 @@ export class Matrix3x2 {
 
   translate(x: number, y: number) {
     this.copy(Matrix3x2.mul(this, Matrix3x2.translate(x, y)));
+    return this;
   }
 
   scale(x: number, y: number) {
     this.copy(Matrix3x2.mul(this, Matrix3x2.scale(x, y)));
+    return this;
   }
 
   rotate(a: number) {
     this.copy(Matrix3x2.mul(this, Matrix3x2.rotate(a)));
+    return this;
   }
 
   mul(m: Matrix3x2) {
     this.copy(Matrix3x2.mul(this, m));
+    return this;
   }
 
   applyToContext(ctx: CanvasRenderingContext2D) {
@@ -54,6 +62,11 @@ export class Matrix3x2 {
 
   get translation() {
     return new Vector2(this.m[2], this.m[5]);
+  }
+
+  set translation(v: Vector2) {
+    this.m[2] = v.x;
+    this.m[5] = v.y;
   }
 
   static identity() {

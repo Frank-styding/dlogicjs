@@ -1,7 +1,4 @@
-import { Component } from "../core/Component";
-import { RegisterEvent } from "../core/Events";
-import { Matrix3x2 } from "../core/Matrix3x2";
-import { Vector2 } from "../core/Vector2";
+import { Component, RegisterEvent, Matrix3x2, Vector2 } from "core/index";
 
 interface GridData {
   chunks: number;
@@ -17,17 +14,21 @@ export const GridEvents = {
   onCameraUpdate: "onCameraUpdate",
 };
 
-export class Grid extends Component {
-  gridDimX: number;
-  gridDimY: number;
-  halfViewWidth: number;
-  halfViewHeight: number;
+export class $Grid extends Component {
+  gridDimX!: number;
+  gridDimY!: number;
+  halfViewWidth!: number;
+  halfViewHeight!: number;
 
-  constructor(screenWidth: number, screenHeight: number) {
-    super();
-    this.name = "Grid";
+  constructor(public screenWidth: number, public screenHeight: number) {
+    super("Grid");
+  }
 
-    const { gridDimX, gridDimY } = this.calcSize(screenWidth, screenHeight);
+  _init(): void {
+    const { gridDimX, gridDimY } = this.calcSize(
+      this.screenWidth,
+      this.screenHeight
+    );
     const scale = 2 * gridData.chunks - 1;
 
     this.gridDimY = gridDimY * scale;
@@ -40,11 +41,13 @@ export class Grid extends Component {
       gridDimX * scale * gridData.cellSize,
       gridDimY * scale * gridData.cellSize
     );
+  }
 
+  _initLayout(): void {
     this.model.translate(-this.width / 2, -this.height / 2);
   }
 
-  _init(): void {
+  _initEvents(): void {
     RegisterEvent(
       this.context,
       GridEvents.onCameraUpdate,
@@ -86,7 +89,7 @@ export class Grid extends Component {
     return { gridDimX, gridDimY };
   }
 
-  protected _draw(): void {
+  _draw(): void {
     const radius = 4;
     for (let i = 0; i < this.gridDimX; i++) {
       for (let j = 0; j < this.gridDimY; j++) {

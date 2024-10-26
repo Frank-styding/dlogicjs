@@ -15,6 +15,10 @@ module.exports = {
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
+    alias: {
+      core: path.resolve(process.cwd(), "src/core/"),
+      components: path.resolve(process.cwd(), "src/components/"),
+    },
   },
   output: {
     filename: "bundle.js",

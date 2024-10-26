@@ -1,12 +1,15 @@
-import { Display } from "./components/Display";
-import { Gate } from "./components/Gate";
-import { Grid } from "./components/Grid";
+import { $Display } from "./components/Display/$Display";
+import { $Gate } from "./components/Gate/$Gate";
+import { $Grid } from "./components/Grid/$Grid";
 
 const SCREEN_WIDH = innerWidth;
 const SCREEN_HEIGHT = innerHeight - 3;
-const display = new Display(SCREEN_WIDH, SCREEN_HEIGHT);
-const grid = new Grid(SCREEN_WIDH, SCREEN_HEIGHT);
-const gate = new Gate();
+const display = new $Display(SCREEN_WIDH, SCREEN_HEIGHT);
+const grid = new $Grid(SCREEN_WIDH, SCREEN_HEIGHT);
+const gate = new $Gate({
+  name: "AND",
+  connections: [],
+});
 display.addChild(grid);
 display.addChild(gate);
 

@@ -1,16 +1,18 @@
-import { Component } from "../core/Component";
-import { CallEvent } from "../core/Events";
-import { Matrix3x2 } from "../core/Matrix3x2";
-import { Vector2 } from "../core/Vector2";
-import { GridEvents } from "./Grid";
+import { GridEvents } from "components/Grid/$Grid";
+import { Component, Vector2, CallEvent, Matrix3x2 } from "core/index";
+export class $Display extends Component {
+  constructor(public width: number, public height: number) {
+    super("Display");
+  }
 
-export class Display extends Component {
-  constructor(width: number, height: number) {
-    super();
-    this.name = "Display";
-    this.setSize(width, height);
+  _init(): void {
+    this.setSize(this.width, this.height);
     this.mouseControls();
-    this.transform.translate(this.width / 2, this.height / 2);
+  }
+
+  _initLayout(): void {
+    this.view.translate(this.width / 2, this.height / 2);
+    this.translateAndZoom.translate(this.width / 2, this.height / 2);
   }
 
   _update(t: number): void {
@@ -23,15 +25,22 @@ export class Display extends Component {
   zoom: number = 1;
   zoomStep = 0.01;
 
+  translateAndZoom: Matrix3x2 = Matrix3x2.identity();
+  offsetMatrix: Matrix3x2 = Matrix3x2.identity();
+
   updateTransform(position: Vector2, zoom: number) {
-    this.transform.copy(Matrix3x2.translateZoom(position, 1 / zoom));
+    this.translateAndZoom.copy(Matrix3x2.translateZoom(position, 1 / zoom));
     const center = new Vector2(this.width / 2, this.height / 2);
-    const inv = Matrix3x2.mul(this.transform, this.model).inv().mulV(center);
+    const inv = Matrix3x2.mul(this.translateAndZoom, this.offsetMatrix)
+      .inv()
+      .mulV(center);
+
+    this.view.copy(this.translateAndZoom.clone().mul(this.offsetMatrix));
     CallEvent(this.context, GridEvents.onCameraUpdate, inv, this.zoom);
   }
 
   updateOffsetMatrix(position: Vector2) {
-    this.model.copy(Matrix3x2.translateZoom(position, 1));
+    this.offsetMatrix.copy(Matrix3x2.translateZoom(position, 1));
   }
 
   mouseControls() {
@@ -52,7 +61,10 @@ export class Display extends Component {
         const diff = this.mousePos.clone().subV(this.startMousePos);
         this.startMousePos.copy(this.mousePos);
         this.isUpdated = false;
-        this.updateTransform(this.transform.translation.addV(diff), this.zoom);
+        this.updateTransform(
+          this.translateAndZoom.translation.addV(diff),
+          this.zoom
+        );
       }
     });
     this.canvas.addEventListener("mouseup", () => {
@@ -63,7 +75,7 @@ export class Display extends Component {
         const step = (e.deltaY < 0 ? -1 : 1) * this.zoomStep;
         const nZoom = step + this.zoom;
         const mouse = this.mousePos.clone();
-        const translation = this.transform.translation;
+        const translation = this.translateAndZoom.translation;
         const point = Matrix3x2.invTranslateZoom(
           translation,
           1 / this.zoom
@@ -74,7 +86,7 @@ export class Display extends Component {
 
         const diff = point1.subV(point);
         this.updateTransform(translation, nZoom);
-        this.updateOffsetMatrix(this.model.translation.addV(diff));
+        this.updateOffsetMatrix(this.offsetMatrix.translation.addV(diff));
         this.zoom = nZoom;
         this.isUpdated = false;
       }
