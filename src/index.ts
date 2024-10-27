@@ -1,8 +1,49 @@
-import { $Display } from "./components/Display/$Display";
+/* import { $Display } from "./components/Display/$Display";
 import { $Gate } from "./components/Gate/$Gate";
-import { $Grid } from "./components/Grid/$Grid";
+import { $Grid } from "./components/Grid/$Grid"; */
 
-const SCREEN_WIDH = innerWidth;
+import { Component } from "core/Component";
+import { Viewport } from "core/Viewport";
+class Canvas extends Component {
+  constructor() {
+    super("Canvas");
+    this.viewport = new Viewport(500, 500);
+  }
+
+  _prevDraw(ctx: CanvasRenderingContext2D): void {
+    ctx.fillStyle = "blue";
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  }
+}
+
+class Rect extends Component {
+  constructor(
+    public width: number,
+    public height: number,
+    public translate: number
+  ) {
+    super("Rect");
+  }
+  _initLayout(): void {
+    this.transform.model.translate(this.translate, 0);
+  }
+  _draw(ctx: CanvasRenderingContext2D): void {
+    ctx.fillStyle = "red";
+    ctx.fillRect(0, 0, this.width, this.height);
+  }
+}
+
+const canvas = new Canvas();
+const rect = new Rect(20, 20, 40);
+canvas.addChild(rect);
+
+canvas.init();
+
+document
+  .getElementById("root")
+  ?.appendChild(canvas.viewport?.canvas as HTMLCanvasElement);
+
+/* const SCREEN_WIDH = innerWidth;
 const SCREEN_HEIGHT = innerHeight - 3;
 const display = new $Display(SCREEN_WIDH, SCREEN_HEIGHT);
 const grid = new $Grid(SCREEN_WIDH, SCREEN_HEIGHT);
@@ -14,9 +55,10 @@ display.addChild(grid);
 display.addChild(gate);
 
 display.init();
+ */
 
 function update(t: number) {
-  display.update(t);
+  canvas.update(t);
 }
 
 let startTime = Date.now();
@@ -35,5 +77,5 @@ function loop(time = 0) {
 }
 
 loop();
-
-document.getElementById("root")?.appendChild(display.canvas);
+/* 
+document.getElementById("root")?.appendChild(display.canvas); */

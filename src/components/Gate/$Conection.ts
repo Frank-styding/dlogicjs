@@ -1,4 +1,4 @@
-import { Component } from "core/index";
+/* import { Component } from "core/index";
 import { ConnectionData } from "./ConnectionData";
 import { $Label } from "components/Label/$Label";
 import { Direction } from "../../core/Direction";
@@ -66,8 +66,8 @@ export class $Conection extends Component {
   }
 
   _prevDraw(): void {
-    /*     this.ctx2D.fillStyle = "red";
-    this.ctx2D.fillRect(0, 0, this.width, this.height); */
+        this.ctx2D.fillStyle = "red";
+    this.ctx2D.fillRect(0, 0, this.width, this.height);
     this.ctx2D.fillStyle = $Conection.COLOR;
     if (
       this.data.direction == Direction.LEFT ||
@@ -84,3 +84,4 @@ export class $Conection extends Component {
     }
   }
 }
+ */

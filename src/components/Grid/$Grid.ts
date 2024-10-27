@@ -1,4 +1,4 @@
-import { Component, RegisterEvent, Matrix3x2, Vector2 } from "core/index";
+/* import { Component, RegisterEvent, Matrix3x2, Vector2 } from "core/index";
 
 interface GridData {
   chunks: number;
@@ -107,3 +107,4 @@ export class $Grid extends Component {
     }
   }
 }
+ */

@@ -1,4 +1,4 @@
-import { Component } from "core/Component";
+/* import { Component } from "core/Component";
 import { $Conection } from "./$Conection";
 import { $Container } from "components/Container/$Container";
 import { gridData } from "components/Grid/$Grid";
@@ -142,3 +142,4 @@ export class $Gate extends Component {
     );
   }
 }
+ */

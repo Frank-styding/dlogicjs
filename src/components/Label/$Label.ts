@@ -1,4 +1,4 @@
-import { Component } from "core/index";
+/* import { Component } from "core/index";
 
 export class $Label extends Component {
   constructor(
@@ -29,3 +29,4 @@ export class $Label extends Component {
     this.ctx2D.fillText(this.text, 0, this.height);
   }
 }
+ */

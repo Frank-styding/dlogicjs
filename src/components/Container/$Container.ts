@@ -1,4 +1,4 @@
-import { Component, Vector2, Direction } from "core/index";
+/* import { Component, Vector2, Direction } from "core/index";
 interface ContainerData {
   horizontal: boolean;
   gap: number;
@@ -50,3 +50,4 @@ export class $Container extends Component {
     }
   }
 }
+ */

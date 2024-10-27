@@ -1,6 +1,7 @@
 import { Collider } from "./Box";
 import { generateUUID } from "./generateUUID";
-import { Matrix3x2 } from "./Matrix3x2";
+import { Transform } from "./Transform";
+import { Viewport } from "./Viewport";
 
 export type Context = {
   tree: string[][];
@@ -9,11 +10,26 @@ export type Context = {
 } & Record<string, any>;
 
 export class Component {
-  //* canvas
-  public canvas: HTMLCanvasElement;
-  protected ctx2D: CanvasRenderingContext2D;
-  public width: number;
-  public height: number;
+  static components: Record<string, Component> = {};
+
+  private _viewport?: Viewport;
+  public collider?: Collider;
+  public parent?: string;
+
+  public id: string;
+  public name: string;
+  public children: string[];
+  public visible: boolean;
+  public active: boolean;
+  public transform: Transform;
+  public zIndex: number;
+  public hasViewport: boolean;
+
+  public layerIdx: number;
+  private treeIdx: number;
+
+  private relaComponents: string[];
+  private pathToBaseComp: string[];
 
   //* varibles of control
   public isUpdated: boolean;
@@ -24,32 +40,9 @@ export class Component {
   public context: Context;
 
   //*properties
-  public name: string;
-  public id: string;
-  public collider: Collider;
-  public children: Component[];
-  public parent?: Component;
-  public visible: boolean;
-  protected treeIdx: number;
-
-  //*transform;
-  public view: Matrix3x2;
-  public transform: Matrix3x2;
-  public model: Matrix3x2;
-  //* record of components
-  static components: Record<string, Component> = {};
 
   constructor(name?: string) {
-    this.canvas = document.createElement("canvas");
-    this.ctx2D = this.canvas.getContext("2d") as CanvasRenderingContext2D;
-    this.width = 0;
-    this.height = 0;
-
-    this.collider = new Collider();
-
-    this.model = Matrix3x2.identity();
-    this.transform = Matrix3x2.identity();
-    this.view = Matrix3x2.identity();
+    this.transform = new Transform();
 
     this.isUpdated = false;
     this.isInitialized = false;
@@ -57,13 +50,28 @@ export class Component {
 
     this.context = { tree: [], treeReady: false };
     this.treeIdx = 0;
+    this.layerIdx = -1;
+    this.relaComponents = [];
+    this.pathToBaseComp = [];
 
     this.name = name || "Component";
     this.id = generateUUID();
     this.visible = true;
+    this.active = true;
     this.children = [];
+    this.zIndex = 0;
+    this.hasViewport = false;
 
     Component.components[this.id] = this;
+  }
+
+  get viewport() {
+    return this._viewport as Viewport;
+  }
+
+  set viewport(viewport: Viewport) {
+    this._viewport = viewport;
+    this.hasViewport = true;
   }
 
   // * INTERNAL FUNCTIONS
@@ -76,15 +84,8 @@ export class Component {
   _ready() {}
   _initEvents() {}
 
-  _prevDraw() {}
-  _draw() {}
-
-  setSize(width: number, height: number) {
-    this.width = width;
-    this.height = height;
-    this.canvas.width = width;
-    this.canvas.height = height;
-  }
+  _prevDraw(ctx: CanvasRenderingContext2D) {}
+  _draw(ctx: CanvasRenderingContext2D) {}
 
   //* ////////////////////
 
@@ -100,30 +101,45 @@ export class Component {
   }
 
   draw() {
-    this.ctx2D.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx2D.save();
-    this.view.applyToContext(this.ctx2D);
-    this._prevDraw();
-    for (let i = 0; i < this.children.length; i++) {
-      this.ctx2D.save();
-      this.children[i].transform.applyToContext(this.ctx2D);
-      this.children[i].model.applyToContext(this.ctx2D);
-      this.ctx2D.drawImage(this.children[i].canvas, 0, 0);
-      this.ctx2D.restore();
+    if (this._viewport == undefined) return;
+    this._viewport.clear();
+    this._viewport.save();
+    this._viewport.applyProjection();
+    this._prevDraw(this._viewport.ctx);
+    for (let i = 0; i < this.relaComponents.length; i++) {
+      const component = Component.components[this.relaComponents[i]];
+      this._viewport.save();
+
+      for (let j = 0; j < component.pathToBaseComp.length; j++) {
+        const subComponent = Component.components[component.pathToBaseComp[j]];
+        this._viewport.applyTransform(subComponent.transform);
+      }
+
+      this._viewport.applyTransform(component.transform);
+
+      if (component.hasViewport) {
+        this._viewport.drawViewport(component._viewport as Viewport);
+      } else {
+        component._draw(this._viewport.ctx);
+      }
+
+      this._viewport.restore();
     }
-    this._draw();
-    this.ctx2D.restore();
+    this._draw(this._viewport.ctx);
+    this._viewport.restore();
   }
 
   addChild(children: Component[] | Component) {
     if (!Array.isArray(children)) {
       children = [children];
     }
+
     for (let child of children) {
-      child.parent = this;
+      child.parent = this.id;
       child.context = this.context;
     }
-    this.children.push(...children);
+
+    this.children.push(...children.map((child) => child.id));
 
     if (this.context.treeReady) {
       for (let child of children) {
@@ -137,9 +153,12 @@ export class Component {
 
   static initTree(componentId: string) {
     const component = Component.components[componentId];
-    let list: Component[] = [component];
+    let list: string[] = [componentId];
+    let paths: string[][] = [[]];
+
     while (list.length > 0) {
-      const child = list.shift() as Component;
+      const child = Component.components[list.shift() as string];
+      const path = paths.shift() as string[];
       if (!child.isInitialized) {
         child.context = component.context;
         component.context.tree[child.treeIdx] ||= [];
@@ -149,9 +168,60 @@ export class Component {
         child._initEvents();
         child.isInitialized = true;
 
-        for (let subChild of child.children) {
+        let count = -1;
+        let invert = child.layerIdx < 0;
+
+        let absLayerIdx =
+          child.layerIdx > 0 ? child.layerIdx : Math.abs(child.layerIdx) - 1;
+
+        let lastRelaCompIdx = -1;
+
+        for (let i = 0; i < path.length; i++) {
+          const idx = invert ? path.length - i - 1 : i;
+          const compId = path[idx];
+          const component = Component.components[compId];
+
+          if (component._viewport) {
+            count++;
+
+            if (!child._viewport) {
+              if (invert) {
+                child.relaComponents.unshift(compId);
+              } else {
+                child.relaComponents.push(compId);
+              }
+              if (count == absLayerIdx) {
+                component.relaComponents.push(child.id);
+              }
+            }
+
+            lastRelaCompIdx = idx;
+          }
+
+          if (count >= absLayerIdx || count == -1) {
+            if (invert) {
+              child.pathToBaseComp.unshift(compId);
+            } else {
+              child.pathToBaseComp.push(compId);
+            }
+          }
+        }
+
+        if (lastRelaCompIdx != -1) {
+          const component = Component.components[path[lastRelaCompIdx]];
+          if (child._viewport) {
+            component.relaComponents.push(child.id);
+          } else {
+            child._viewport = component.viewport;
+          }
+        }
+
+        for (let subChildId of child.children) {
+          const subChild = Component.components[subChildId];
           subChild.treeIdx = child.treeIdx + 1;
-          list.push(subChild);
+          subChild.zIndex = child.treeIdx;
+          list.push(subChild.id);
+          paths.push([...path, child.id]);
         }
       }
     }
@@ -162,11 +232,11 @@ export class Component {
       const count = context.tree[i].length;
       for (let j = 0; j < count; j++) {
         const child = Component.components[context.tree[i][j]];
-        if (!child.isLayoutInitialized && child.visible) {
+        if (!child.isLayoutInitialized && child.active) {
           child._initLayout();
           child._ready();
           if (child.parent) {
-            child.parent.isLayoutInitialized = false;
+            Component.components[child.parent].isLayoutInitialized = false;
           }
           child.isLayoutInitialized = true;
         }
@@ -183,8 +253,8 @@ export class Component {
         if (!child.isUpdated && child.visible) {
           child._update(t);
           child.draw();
-          if (child.parent) {
-            child.parent.isUpdated = false;
+          for (let componetId of child.relaComponents) {
+            Component.components[componetId].isUpdated = false;
           }
         }
       }

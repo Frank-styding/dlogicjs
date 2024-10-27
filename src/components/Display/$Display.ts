@@ -1,4 +1,4 @@
-import { GridEvents } from "components/Grid/$Grid";
+/* import { GridEvents } from "components/Grid/$Grid";
 import { Component, Vector2, CallEvent, Matrix3x2 } from "core/index";
 export class $Display extends Component {
   constructor(public width: number, public height: number) {
@@ -93,3 +93,4 @@ export class $Display extends Component {
     });
   }
 }
+ */
