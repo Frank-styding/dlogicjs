@@ -1,80 +1,76 @@
-/* import { Component, RegisterEvent, Matrix3x2, Vector2 } from "core/index";
+import { $DisplayEvents } from "components/Display/$Display";
+import {
+  Component,
+  RectCollider,
+  Matrix3x2,
+  Vector2,
+  RegisterEvent,
+  Viewport,
+} from "core/index";
 
-interface GridData {
-  chunks: number;
-  cellSize: number;
-}
-
-export const gridData: GridData = {
+export const gridData = {
   chunks: 3,
   cellSize: 50,
-};
-
-export const GridEvents = {
-  onCameraUpdate: "onCameraUpdate",
-};
+} as const;
 
 export class $Grid extends Component {
   gridDimX!: number;
   gridDimY!: number;
   halfViewWidth!: number;
   halfViewHeight!: number;
-
   constructor(public screenWidth: number, public screenHeight: number) {
     super("Grid");
+    this.viewport = new Viewport(0, 0);
   }
-
   _init(): void {
     const { gridDimX, gridDimY } = this.calcSize(
       this.screenWidth,
       this.screenHeight
     );
     const scale = 2 * gridData.chunks - 1;
-
     this.gridDimY = gridDimY * scale;
     this.gridDimX = gridDimX * scale;
-
     this.halfViewWidth = ((gridDimX - 1) / 2 + 0.5) * gridData.cellSize;
     this.halfViewHeight = ((gridDimY - 1) / 2 + 0.5) * gridData.cellSize;
-
-    this.setSize(
+    this.viewport.setSize(
       gridDimX * scale * gridData.cellSize,
       gridDimY * scale * gridData.cellSize
     );
   }
-
   _initLayout(): void {
-    this.model.translate(-this.width / 2, -this.height / 2);
+    this.transform.model.translate(
+      -this.viewport.width / 2,
+      -this.viewport.height / 2
+    );
   }
-
   _initEvents(): void {
     RegisterEvent(
       this.context,
-      GridEvents.onCameraUpdate,
+      $DisplayEvents.onCameraUpdate,
       this.onCameraUpdate.bind(this)
     );
   }
 
   onCameraUpdate(cameraPosition: Vector2): void {
-    const position = this.transform.translation;
+    const position = this.transform.view.translation;
     const diff = cameraPosition.subV(position);
     if (diff.x > this.halfViewWidth) {
-      this.transform.copy(
+      this.transform.view.copy(
         Matrix3x2.translate(position.x + this.halfViewWidth, position.y)
       );
     }
     if (diff.x < -this.halfViewWidth) {
-      this.transform.copy(
+      this.transform.view.copy(
         Matrix3x2.translate(position.x - this.halfViewWidth, position.y)
       );
     }
     if (diff.y > this.halfViewHeight) {
-      this.transform.copy(
+      this.transform.view.copy(
         Matrix3x2.translate(position.x, position.y + this.halfViewHeight)
       );
     }
     if (diff.y < -this.halfViewWidth) {
-      this.transform.copy(
+      this.transform.view.copy(
         Matrix3x2.translate(position.x, position.y - this.halfViewHeight)
       );
     }
@@ -89,22 +85,21 @@ export class $Grid extends Component {
     return { gridDimX, gridDimY };
   }
 
-  _draw(): void {
+  _draw(ctx: CanvasRenderingContext2D): void {
     const radius = 4;
     for (let i = 0; i < this.gridDimX; i++) {
       for (let j = 0; j < this.gridDimY; j++) {
-        this.ctx2D.beginPath();
-        this.ctx2D.fillStyle = "black";
-        this.ctx2D.arc(
+        ctx.beginPath();
+        ctx.fillStyle = "black";
+        ctx.arc(
           i * gridData.cellSize,
           j * gridData.cellSize,
           radius,
           0,
           Math.PI * 2
         );
-        this.ctx2D.fill();
+        ctx.fill();
       }
     }
   }
 }
- */

@@ -29,6 +29,7 @@ export class Component {
   private treeIdx: number;
 
   private relaComponents: string[];
+  private compViewports: string[];
   private pathToBaseComp: string[];
 
   //* varibles of control
@@ -53,6 +54,7 @@ export class Component {
     this.layerIdx = -1;
     this.relaComponents = [];
     this.pathToBaseComp = [];
+    this.compViewports = [];
 
     this.name = name || "Component";
     this.id = generateUUID();
@@ -184,18 +186,19 @@ export class Component {
           if (component._viewport) {
             count++;
 
-            if (!child._viewport) {
-              if (invert) {
-                child.relaComponents.unshift(compId);
-              } else {
-                child.relaComponents.push(compId);
-              }
-              if (count == absLayerIdx) {
-                component.relaComponents.push(child.id);
-              }
+            if (!child._viewport && count == absLayerIdx) {
+              component.relaComponents.push(child.id);
             }
 
-            lastRelaCompIdx = idx;
+            if (count == absLayerIdx) {
+              lastRelaCompIdx = idx;
+            }
+
+            if (invert) {
+              child.compViewports.unshift(compId);
+            } else {
+              child.compViewports.push(compId);
+            }
           }
 
           if (count >= absLayerIdx || count == -1) {
@@ -209,6 +212,7 @@ export class Component {
 
         if (lastRelaCompIdx != -1) {
           const component = Component.components[path[lastRelaCompIdx]];
+
           if (child._viewport) {
             component.relaComponents.push(child.id);
           } else {
@@ -253,8 +257,8 @@ export class Component {
         if (!child.isUpdated && child.visible) {
           child._update(t);
           child.draw();
-          for (let componetId of child.relaComponents) {
-            Component.components[componetId].isUpdated = false;
+          for (let compId of child.compViewports) {
+            Component.components[compId].isUpdated = false;
           }
         }
       }
