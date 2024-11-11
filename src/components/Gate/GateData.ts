@@ -1,7 +1,6 @@
-/* import { ConnectionData } from "./ConnectionData";
+import { ConnectionData } from "./ConnectionData";
 
 export interface GateData {
   connections: ConnectionData[];
   name: string;
 }
- */

@@ -1,7 +1,6 @@
 import { $DisplayEvents } from "components/Display/$Display";
 import {
   Component,
-  RectCollider,
   Matrix3x2,
   Vector2,
   RegisterEvent,
@@ -43,12 +42,20 @@ export class $Grid extends Component {
       -this.viewport.height / 2
     );
   }
+
   _initEvents(): void {
     RegisterEvent(
       this.context,
       $DisplayEvents.onCameraUpdate,
       this.onCameraUpdate.bind(this)
     );
+  }
+  _ready(): void {
+    console.log(this.globalPath);
+  }
+
+  _update(t: number): void {
+    this.isUpdated = true;
   }
 
   onCameraUpdate(cameraPosition: Vector2): void {

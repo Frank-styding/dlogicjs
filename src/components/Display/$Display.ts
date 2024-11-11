@@ -28,12 +28,9 @@ export class $Display extends Component {
   updateTransform(position: Vector2, zoom: number) {
     this.translateAndZoom.copy(Matrix3x2.translateZoom(position, 1 / zoom));
     const center = new Vector2(this.width / 2, this.height / 2);
-    const inv = Matrix3x2.mul(this.translateAndZoom, this.offsetMatrix)
-      .inv()
-      .mulV(center);
-    this.viewport.projection.copy(
-      this.translateAndZoom.clone().mul(this.offsetMatrix)
-    );
+    const matrix = Matrix3x2.mul(this.translateAndZoom, this.offsetMatrix);
+    const inv = matrix.inv().mulV(center);
+    this.viewport.projection.copy(matrix);
     CallEvent(this.context, $DisplayEvents.onCameraUpdate, inv, this.zoom);
   }
 
@@ -87,9 +84,5 @@ export class $Display extends Component {
         this.isUpdated = false;
       }
     });
-  }
-  _draw(ctx: CanvasRenderingContext2D): void {
-    ctx.fillStyle = "red";
-    ctx.fillRect(0, 0, 100, 100);
   }
 }

@@ -2,7 +2,7 @@ import { $Display } from "components/Display/$Display";
 import { $Grid } from "components/Grid/$Grid";
 import { Component } from "core/Component";
 const SCREEN_WIDH = innerWidth;
-const SCREEN_HEIGHT = innerHeight - 3;
+const SCREEN_HEIGHT = innerHeight - 4;
 
 const display = new $Display(SCREEN_WIDH, SCREEN_HEIGHT);
 const grid = new $Grid(SCREEN_WIDH, SCREEN_HEIGHT);
@@ -23,7 +23,7 @@ function loop(time = 0) {
   update(time);
   fps++;
   if (endTime - startTime > 1000) {
-    // console.log(fps);
+    console.log(fps);
     startTime = endTime;
     fps = 0;
   }

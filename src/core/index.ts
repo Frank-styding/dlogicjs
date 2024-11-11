@@ -1,4 +1,4 @@
-export * from "./Box";
+export * from "./Collider";
 export * from "./Vector2";
 export * from "./Matrix3x2";
 export * from "./Events";

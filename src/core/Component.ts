@@ -1,4 +1,4 @@
-import { Collider } from "./Box";
+import { Collider } from "./Collider";
 import { generateUUID } from "./generateUUID";
 import { Transform } from "./Transform";
 import { Viewport } from "./Viewport";
@@ -28,9 +28,10 @@ export class Component {
   public layerIdx: number;
   private treeIdx: number;
 
-  private relaComponents: string[];
-  private compViewports: string[];
-  private pathToBaseComp: string[];
+  protected relaComponents: string[];
+  protected compViewports: string[];
+  protected pathToBaseComp: string[];
+  protected globalPath: string[];
 
   //* varibles of control
   public isUpdated: boolean;
@@ -43,7 +44,7 @@ export class Component {
   //*properties
 
   constructor(name?: string) {
-    this.transform = new Transform();
+    this.transform = new Transform(this);
 
     this.isUpdated = false;
     this.isInitialized = false;
@@ -55,6 +56,7 @@ export class Component {
     this.relaComponents = [];
     this.pathToBaseComp = [];
     this.compViewports = [];
+    this.globalPath = [];
 
     this.name = name || "Component";
     this.id = generateUUID();
@@ -162,6 +164,7 @@ export class Component {
       const child = Component.components[list.shift() as string];
       const path = paths.shift() as string[];
       if (!child.isInitialized) {
+        child.globalPath.push(...path);
         child.context = component.context;
         component.context.tree[child.treeIdx] ||= [];
         component.context.tree[child.treeIdx].push(child.id);
@@ -253,7 +256,6 @@ export class Component {
       const count = context.tree[i].length;
       for (let j = 0; j < count; j++) {
         const child = Component.components[context.tree[i][j]];
-
         if (!child.isUpdated && child.visible) {
           child._update(t);
           child.draw();

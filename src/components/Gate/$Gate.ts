@@ -1,3 +1,24 @@
+import { Component, Viewport } from "core/index";
+import { GateData } from "./GateData";
+
+export class Panel extends Component {
+  constructor(public width: number, public height: number) {
+    super("Panel");
+    this.viewport = new Viewport(width, height);
+  }
+  _initLayout(): void {
+    this.transform.model.translate(-this.width / 2, -this.height / 2);
+  }
+  _draw(ctx: CanvasRenderingContext2D): void {
+    ctx.roundRect(0, 0, this.width, this.height);
+  }
+}
+
+export class $Gate extends Component {
+  constructor(public data: GateData) {
+    super("Gate");
+  }
+}
 /* import { Component } from "core/Component";
 import { $Conection } from "./$Conection";
 import { $Container } from "components/Container/$Container";
