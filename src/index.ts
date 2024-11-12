@@ -1,6 +1,6 @@
 import { $Display } from "components/Display/$Display";
 import { $Grid } from "components/Grid/$Grid";
-import { Component } from "core/Component";
+
 const SCREEN_WIDH = innerWidth;
 const SCREEN_HEIGHT = innerHeight - 4;
 

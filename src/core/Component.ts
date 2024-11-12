@@ -266,4 +266,8 @@ export class Component {
       }
     }
   }
+
+  static get(id: string) {
+    return this.components[id];
+  }
 }

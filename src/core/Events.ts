@@ -1,10 +1,8 @@
 import { Context } from "./Component";
 
+const tag = "event_";
 export function CallEvent(context: Context, name: string, ...args: any[]) {
-  context[name] ||= [];
-  for (let i = 0; i < context[name].length; i++) {
-    context[name][i](...args);
-  }
+  return context[tag + name](...args);
 }
 
 export function RegisterEvent(
@@ -12,6 +10,6 @@ export function RegisterEvent(
   name: string,
   callback: Function
 ) {
-  context[name] ||= [];
-  context[name].push(callback);
+  if (context[tag + name] != undefined) return;
+  context[tag + name] = callback;
 }

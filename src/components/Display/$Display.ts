@@ -2,6 +2,9 @@ import { CallEvent, Component, Matrix3x2, Vector2, Viewport } from "core/index";
 
 export const $DisplayEvents = {
   onCameraUpdate: "onCameraUpdate",
+  mouseDown: "mouseDown",
+  mouseUp: "mouseUp",
+  mouseMove: "mouseMove",
 } as const;
 export class $Display extends Component {
   constructor(public width: number, public height: number) {
@@ -40,17 +43,19 @@ export class $Display extends Component {
 
   mouseControls() {
     this.viewport.canvas.addEventListener("mousedown", (e) => {
+      this.startMousePos.x = e.clientX;
+      this.startMousePos.y = e.clientY;
+      this.mousePos.x = e.clientX;
+      this.mousePos.y = e.clientY;
+      CallEvent(this.context, $DisplayEvents.mouseDown);
       if (e.button === 1) {
-        this.startMousePos.x = e.clientX;
-        this.startMousePos.y = e.clientY;
-        this.mousePos.x = e.clientX;
-        this.mousePos.y = e.clientY;
         this.mouseIsDown = true;
       }
     });
     this.viewport.canvas.addEventListener("mousemove", (e) => {
       this.mousePos.x = e.clientX;
       this.mousePos.y = e.clientY;
+
       if (this.mouseIsDown) {
         const diff = this.mousePos.clone().subV(this.startMousePos);
         this.startMousePos.copy(this.mousePos);
@@ -60,9 +65,16 @@ export class $Display extends Component {
           this.zoom
         );
       }
+      CallEvent(
+        this.context,
+        $DisplayEvents.mouseMove,
+        e,
+        this.viewport.projection.inv().mulV(this.mousePos)
+      );
     });
     this.viewport.canvas.addEventListener("mouseup", () => {
       this.mouseIsDown = false;
+      CallEvent(this.context, $DisplayEvents.mouseUp);
     });
     this.viewport.canvas.addEventListener("wheel", (e) => {
       if (e.deltaY != 0 && !this.mouseIsDown) {
