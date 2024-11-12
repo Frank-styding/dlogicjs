@@ -1,4 +1,4 @@
-import { Component } from "./Component";
+import { Component } from "../Component";
 import { Matrix3x2 } from "./Matrix3x2";
 
 export class Transform {

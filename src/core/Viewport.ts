@@ -1,5 +1,5 @@
-import { Transform } from "./Transform";
-import { Matrix3x2 } from "./Matrix3x2";
+import { Transform } from "./math/Transform";
+import { Matrix3x2 } from "./math/Matrix3x2";
 
 export class Viewport {
   canvas: HTMLCanvasElement;

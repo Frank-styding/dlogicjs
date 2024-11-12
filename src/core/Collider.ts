@@ -1,6 +1,6 @@
 import { Component } from "./Component";
-import { Matrix3x2 } from "./Matrix3x2";
-import { Vector2 } from "./Vector2";
+import { Matrix3x2 } from "./math/Matrix3x2";
+import { Vector2 } from "./math/Vector2";
 
 export class Box {
   constructor(

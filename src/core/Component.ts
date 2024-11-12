@@ -1,12 +1,13 @@
 import { Collider } from "./Collider";
-import { generateUUID } from "./generateUUID";
-import { Transform } from "./Transform";
+import { generateUUID } from "./util/generateUUID";
+import { Transform } from "./math/Transform";
 import { Viewport } from "./Viewport";
 
 export type Context = {
   tree: string[][];
   treeReady: boolean;
-  rootId?: string;
+  rootId: string;
+  events: Record<string, Function[]>;
 } & Record<string, any>;
 
 export class Component {
@@ -15,15 +16,6 @@ export class Component {
   private _viewport?: Viewport;
   public collider?: Collider;
   public parent?: string;
-
-  public id: string;
-  public name: string;
-  public children: string[];
-  public visible: boolean;
-  public active: boolean;
-  public transform: Transform;
-  public zIndex: number;
-  public hasViewport: boolean;
 
   public layerIdx: number;
   private treeIdx: number;
@@ -37,11 +29,20 @@ export class Component {
   public isUpdated: boolean;
   public isInitialized: boolean;
   public isLayoutInitialized: boolean;
+  public isFirstDraw: boolean;
 
   //*context
   public context: Context;
 
   //*properties
+  public id: string;
+  public name: string;
+  public children: string[];
+  public visible: boolean;
+  public active: boolean;
+  public transform: Transform;
+  public zIndex: number;
+  public hasViewport: boolean;
 
   constructor(name?: string) {
     this.transform = new Transform(this);
@@ -49,8 +50,9 @@ export class Component {
     this.isUpdated = false;
     this.isInitialized = false;
     this.isLayoutInitialized = false;
+    this.isFirstDraw = true;
 
-    this.context = { tree: [], treeReady: false };
+    this.context = { tree: [], treeReady: false, rootId: "", events: {} };
     this.treeIdx = 0;
     this.layerIdx = -1;
     this.relaComponents = [];
@@ -96,7 +98,6 @@ export class Component {
   init() {
     Component.initTree(this.id);
     this.context.treeReady = true;
-    this.context.rootId = this.id;
     Component.initComponents({ ...this.context });
   }
 
@@ -239,7 +240,7 @@ export class Component {
       const count = context.tree[i].length;
       for (let j = 0; j < count; j++) {
         const child = Component.components[context.tree[i][j]];
-        if (!child.isLayoutInitialized && child.active) {
+        if (!child.isLayoutInitialized) {
           child._initLayout();
           child._ready();
           if (child.parent) {
@@ -256,11 +257,15 @@ export class Component {
       const count = context.tree[i].length;
       for (let j = 0; j < count; j++) {
         const child = Component.components[context.tree[i][j]];
-        if (!child.isUpdated && child.visible) {
+
+        if ((!child.isUpdated && child.active) || child.isFirstDraw) {
+          child.isFirstDraw = false;
           child._update(t);
-          child.draw();
-          for (let compId of child.compViewports) {
-            Component.components[compId].isUpdated = false;
+          if (child.visible) {
+            child.draw();
+            for (let compId of child.compViewports) {
+              Component.components[compId].isUpdated = false;
+            }
           }
         }
       }
